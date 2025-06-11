@@ -14,7 +14,7 @@ from api.serializers import (RecipeListSerializer, TagSerializer,
                              IngredientSerializer, FavoriteSerializer,
                              ShoppingCartSerializer, RecipeWriteSerializer)
 from api.services import shopping_cart
-from api.permissions import IsOwnerOrAdminOrReadOnly
+from api.permissions import PrivelegiAdmin
 from api.filters import IngredientSearchFilter, RecipeFilter
 from api.paginations import ApiPagination
 
@@ -42,7 +42,7 @@ class IngredientViewSet(mixins.ListModelMixin,
 class RecipeViewSet(viewsets.ModelViewSet):
     """Вьюсет модели Recipe: [GET, POST, DELETE, PATCH]."""
     queryset = Recipe.objects.all()
-    permission_classes = (IsOwnerOrAdminOrReadOnly, )
+    permission_classes = (PrivelegiAdmin, )
     filter_backends = (DjangoFilterBackend, )
     pagination_class = ApiPagination
     filterset_class = RecipeFilter
