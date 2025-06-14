@@ -1,30 +1,49 @@
-from rest_framework import viewsets, status
-from rest_framework.response import Response
-from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import get_object_or_404
+from rest_framework import serializers
 
-from djoser.serializers import SetPasswordSerializer
-
-from recipes.models import Follow
+from recipes.models import Follow, Recipe
 from users.models import User
-from users.serializers import FollowSerializer, UserSerializer
-from api.permissions import IsCurrentUserOrAdminOrReadOnly
-from api.paginations import ApiPagination
 
 
-class UserSubscriptionViewSet(viewsets.ModelViewSet):
-    """ViewSet для пользователей и подписок."""
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (IsCurrentUserOrAdminOrReadOnly,)
-    pagination_class = ApiPagination
+class UserSerializer(serializers.ModelSerializer):
+    """Serializer for User model."""
+    is_subscribed = serializers.SerializerMethodField()
 
-    @action(detail=False, methods=['get'], permission_classes=[IsAuthenticated])
-    def me(self, request):
-        """Возвращает текущего пользователя."""
-        user = request.user
-        serializer = UserSerializer(user, context={'request': request})
-        return Response(serializer.data)
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+        )
 
-    @action(methods=['post'], detail=False, permission_classes=[IsAuthenticated]()_
+    def get_is_subscribed(self, obj):
+        user = self.context.get('request').user
+        if user.is_anonymous:
+            return False
+        return Follow.objects.filter(user=user, author=obj).exists()
+
+
+class RecipeMiniSerializer(serializers.ModelSerializer):
+    """Lightweight serializer for Recipe used in FollowSerializer."""
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+
+class FollowSerializer(UserSerializer):
+    """Serializer for user subscriptions."""
+    recipes = RecipeMiniSerializer(many=True, read_only=True)
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + (
+            'recipes',
+            'recipes_count',
+        )
+
+    def get_recipes_count(self, obj):
+        return obj.recipe.count()
