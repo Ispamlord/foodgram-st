@@ -6,7 +6,6 @@ from recipes.models import IngredientRecipe
 
 
 def shopping_cart(self, request, author):
-    """Скачивание списка продуктов для выбранных рецептов пользователя."""
     sum_ingredients_in_recipes = IngredientRecipe.objects.filter(
         recipe__shopping_cart__author=author
     ).values(

@@ -10,7 +10,6 @@ from users.serializers import UserSerializer
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    """Сериалайзер модели Favorite."""
     name = serializers.ReadOnlyField(
         source='recipe.name',
         read_only=True)
@@ -50,7 +49,6 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    """Сериалайзер модели Ingredient."""
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
@@ -58,7 +56,6 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class TagSerializer(serializers.ModelSerializer):
-    """Serializer для модели Tag."""
     class Meta:
         model = Tag
         fields = ('id', 'name', 'color', 'slug')
@@ -80,12 +77,6 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
 
 
 class RecipeListSerializer(serializers.ModelSerializer):
-    """
-    Serializer для модели Recipe - чтение данных.
-    Находится ли рецепт в избранном, списке покупок.
-    Получение списка ингредиентов с добавленным полем
-    amount из промежуточной модели.
-    """
     author = UserSerializer()
     tags = TagSerializer(
         many=True,
@@ -117,9 +108,6 @@ class RecipeListSerializer(serializers.ModelSerializer):
 
 
 class AddIngredientSerializer(serializers.ModelSerializer):
-    """
-    Serializer для поля ingredient модели Recipe - создание ингредиентов.
-    """
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all())
     amount = serializers.IntegerField()
@@ -130,7 +118,6 @@ class AddIngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeWriteSerializer(serializers.ModelSerializer):
-    """Serializer для модели Recipe - запись / обновление / удаление данных."""
     ingredients = AddIngredientSerializer(
         many=True,
         write_only=True)
@@ -206,7 +193,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
 
 
 class RecipeMiniSerializer(serializers.ModelSerializer):
-    """Сериализатор предназначен для вывода рецептом в FollowSerializer."""
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'cooking_time', 'image',)

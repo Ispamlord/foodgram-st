@@ -22,7 +22,6 @@ from api.paginations import ApiPagination
 class TagViewSet(mixins.ListModelMixin,
                  mixins.RetrieveModelMixin,
                  viewsets.GenericViewSet):
-    """Функция для модели тегов."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (AllowAny, )
@@ -31,7 +30,6 @@ class TagViewSet(mixins.ListModelMixin,
 class IngredientViewSet(mixins.ListModelMixin,
                         mixins.RetrieveModelMixin,
                         viewsets.GenericViewSet):
-    """Функция для модели ингредиентов."""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AllowAny, )
@@ -40,7 +38,6 @@ class IngredientViewSet(mixins.ListModelMixin,
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    """Вьюсет модели Recipe: [GET, POST, DELETE, PATCH]."""
     queryset = Recipe.objects.all()
     permission_classes = (PrivelegiAdmin, )
     filter_backends = (DjangoFilterBackend, )
@@ -56,10 +53,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
     def favorite(self, request, *args, **kwargs):
-        """
-        Получить / Добавить / Удалить  рецепт
-        из избранного у текущего пользоватля.
-        """
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('pk'))
         user = self.request.user
         if request.method == 'POST':
@@ -86,10 +79,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, **kwargs):
-        """
-        Получить / Добавить / Удалить  рецепт
-        из списка покупок у текущего пользоватля.
-        """
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('pk'))
         user = self.request.user
         if request.method == 'POST':
@@ -116,10 +105,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             methods=['get'],
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
-        """
-        Скачать список покупок для выбранных рецептов,
-        данные суммируются.
-        """
         author = User.objects.get(id=self.request.user.pk)
         if author.shopping_cart.exists():
             return shopping_cart(self, request, author)
