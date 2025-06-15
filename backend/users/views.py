@@ -13,7 +13,7 @@ from api.permissions import IsCurrentUserOrAdminOrReadOnly
 from api.paginations import ApiPagination
 
 
-class UserSubscriptionViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     """ViewSet для пользователей и подписок."""
     queryset = User.objects.all()
     serializer_class = UserSerializer

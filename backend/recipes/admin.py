@@ -41,12 +41,19 @@ class ShoppingCartAdmin(admin.ModelAdmin):
 
 
 class IngredientRecipeAdmin(admin.ModelAdmin):
+    """
+    Админ-зона ингридентов для рецептов.
+    """
     list_display = ('id', 'recipe', 'ingredient', 'amount',)
     list_filter = ('recipe', 'ingredient')
     search_fields = ('name',)
 
 
 class RecipeAdmin(admin.ModelAdmin):
+    """
+    Админ-зона рецептов.
+    Добавлен просмотр кол-ва добавленных рецептов в избранное.
+    """
     list_display = ('id', 'author', 'name', 'pub_date', 'in_favorite', )
     search_fields = ('name',)
     list_filter = ('pub_date', 'author', 'name', 'tags')
@@ -61,12 +68,18 @@ class RecipeAdmin(admin.ModelAdmin):
 
 
 class TagAdmin(admin.ModelAdmin):
+    """
+    Админ-зона тегов.
+    """
     list_display = ('id', 'name', 'slug', 'color')
     list_filter = ('name',)
     search_fields = ('name',)
 
 
 class IngredientAdmin(admin.ModelAdmin):
+    """
+    Админ-зона ингридиентов.
+    """
     list_display = ('name', 'measurement_unit')
     list_filter = ('name',)
     search_fields = ('name',)

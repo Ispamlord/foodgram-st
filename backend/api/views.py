@@ -8,8 +8,14 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 from django.shortcuts import get_object_or_404
 
-from recipes.models import (Recipe, Tag, Ingredient,
-                            Favorite, ShoppingCart, User)
+from recipes.models import (
+    Recipe,
+    Tag,
+    Ingredient,
+    Favorite,
+    ShoppingCart,
+)
+from users.models import User
 from api.serializers import (RecipeListSerializer, TagSerializer,
                              IngredientSerializer, FavoriteSerializer,
                              ShoppingCartSerializer, RecipeWriteSerializer)
@@ -22,6 +28,7 @@ from api.paginations import ApiPagination
 class TagViewSet(mixins.ListModelMixin,
                  mixins.RetrieveModelMixin,
                  viewsets.GenericViewSet):
+    """Функция для модели тегов."""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (AllowAny, )
@@ -30,6 +37,7 @@ class TagViewSet(mixins.ListModelMixin,
 class IngredientViewSet(mixins.ListModelMixin,
                         mixins.RetrieveModelMixin,
                         viewsets.GenericViewSet):
+    """Функция для модели ингредиентов."""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     permission_classes = (AllowAny, )
@@ -38,6 +46,7 @@ class IngredientViewSet(mixins.ListModelMixin,
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """Вьюсет модели Recipe: [GET, POST, DELETE, PATCH]."""
     queryset = Recipe.objects.all()
     permission_classes = (PrivelegiAdmin, )
     filter_backends = (DjangoFilterBackend, )
@@ -53,6 +62,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
     def favorite(self, request, *args, **kwargs):
+        """
+        Получить / Добавить / Удалить  рецепт
+        из избранного у текущего пользоватля.
+        """
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('pk'))
         user = self.request.user
         if request.method == 'POST':
@@ -71,7 +84,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                                        recipe=recipe).exists():
             return Response({'errors': 'Объект не найден'},
                             status=status.HTTP_404_NOT_FOUND)
-        Favorite.objects.get(recipe=recipe).delete()
+        Favorite.objects.get(author=user, recipe=recipe).delete()
         return Response('Рецепт успешно удалён из избранного.',
                         status=status.HTTP_204_NO_CONTENT)
 
@@ -79,6 +92,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             methods=['post', 'delete'],
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, **kwargs):
+        """
+        Получить / Добавить / Удалить  рецепт
+        из списка покупок у текущего пользоватля.
+        """
         recipe = get_object_or_404(Recipe, id=self.kwargs.get('pk'))
         user = self.request.user
         if request.method == 'POST':
@@ -97,7 +114,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                                            recipe=recipe).exists():
             return Response({'errors': 'Объект не найден'},
                             status=status.HTTP_404_NOT_FOUND)
-        ShoppingCart.objects.get(recipe=recipe).delete()
+        ShoppingCart.objects.get(author=user, recipe=recipe).delete()
         return Response('Рецепт успешно удалён из списка покупок.',
                         status=status.HTTP_204_NO_CONTENT)
 
@@ -105,6 +122,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
             methods=['get'],
             permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
+        """
+        Скачать список покупок для выбранных рецептов,
+        данные суммируются.
+        """
         author = User.objects.get(id=self.request.user.pk)
         if author.shopping_cart.exists():
             return shopping_cart(self, request, author)
