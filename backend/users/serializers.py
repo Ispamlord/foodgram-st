@@ -1,11 +1,10 @@
 from rest_framework import serializers
 
-from recipes.models import Follow, Recipe
+from recipes.models import Subscription, Recipe
 from users.models import User
 
 
-class UserSerializer(serializers.ModelSerializer):
-    """Serializer for User model."""
+class UserReadSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
@@ -20,27 +19,24 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
     def get_is_subscribed(self, obj):
-        user = self.context.get('request').user
-        if user.is_anonymous:
+        request = self.context.get('request')
+        if request is None or request.user.is_anonymous:
             return False
-        return Follow.objects.filter(user=user, author=obj).exists()
+        return Subscription.objects.filter(user=request.user, author=obj).exists()
 
 
-class RecipeMiniSerializer(serializers.ModelSerializer):
-    """Lightweight serializer for Recipe used in FollowSerializer."""
-
+class RecipeShortSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
 
 
-class FollowSerializer(UserSerializer):
-    """Serializer for user subscriptions."""
-    recipes = RecipeMiniSerializer(many=True, read_only=True)
+class SubscriptionSerializer(UserReadSerializer):
+    recipes = RecipeShortSerializer(many=True, read_only=True)
     recipes_count = serializers.SerializerMethodField()
 
-    class Meta(UserSerializer.Meta):
-        fields = UserSerializer.Meta.fields + (
+    class Meta(UserReadSerializer.Meta):
+        fields = UserReadSerializer.Meta.fields + (
             'recipes',
             'recipes_count',
         )
