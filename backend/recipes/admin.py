@@ -1,72 +1,60 @@
+from django.conf import settings
 from django.contrib import admin
-from .models import (
-    Bookmark,
-    Subscription,
-    Product,
-    DishProduct,
-    Dish,
-    Cart,
-    Label
-)
 
-
-class ProductInline(admin.TabularInline):
-    model = DishProduct
-    extra = 3
-
-
-@admin.register(Subscription)
-class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ('user', 'author')
-    list_filter = ('author',)
-    search_fields = ('user',)
-
-
-@admin.register(Bookmark)
-class BookmarkAdmin(admin.ModelAdmin):
-    list_display = ('user', 'dish')
-    list_filter = ('user',)
-    search_fields = ('user',)
-
-
-@admin.register(Cart)
-class CartAdmin(admin.ModelAdmin):
-    list_display = ('user', 'dish')
-    list_filter = ('user',)
-    search_fields = ('user',)
-
-
-@admin.register(DishProduct)
-class DishProductAdmin(admin.ModelAdmin):
-    list_display = ('id', 'dish', 'product', 'amount')
-    list_filter = ('dish', 'product')
-    search_fields = ('product__name',)
-
-
-@admin.register(Dish)
-class DishAdmin(admin.ModelAdmin):
-    list_display = ('id', 'author', 'name', 'created_at', 'favorite_count')
-    search_fields = ('name',)
-    list_filter = ('created_at', 'author', 'name', 'labels')
-    filter_horizontal = ('ingredients',)
-    empty_value_display = '-пусто-'
-    inlines = [ProductInline]
-
-    def favorite_count(self, obj):
-        return obj.favorited_by.count()
-
-    favorite_count.short_description = 'В избранном'
+from recipes.models import (Bookmark, Product, Dish,
+                            DishProduct, Cart, Label)
 
 
 @admin.register(Label)
 class LabelAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'slug', 'color')
-    list_filter = ('name',)
-    search_fields = ('name',)
+    list_display = ('pk', 'name', 'color', 'slug')
+    search_fields = ('name', 'color', 'slug')
+    list_filter = ('name', 'color', 'slug')
+    empty_value_display = settings.EMPTY_VALUE
 
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ('name', 'unit')
-    list_filter = ('name',)
+    list_display = ('pk', 'name', 'unit')
     search_fields = ('name',)
+    list_filter = ('name',)
+    empty_value_display = settings.EMPTY_VALUE
+
+
+class DishProductInline(admin.TabularInline):
+    model = DishProduct
+
+
+@admin.register(Dish)
+class DishAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'name', 'author', 'bookmarks_count')
+    search_fields = ('name', 'author__username')
+    list_filter = ('name', 'author', 'labels')
+    empty_value_display = settings.EMPTY_VALUE
+    inlines = [
+        DishProductInline,
+    ]
+
+    def bookmarks_count(self, obj):
+        return obj.favorited_by.count()
+    bookmarks_count.short_description = 'В избранном'
+
+
+@admin.register(DishProduct)
+class DishProductAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'dish', 'product', 'amount')
+    empty_value_display = settings.EMPTY_VALUE
+
+
+@admin.register(Bookmark)
+class BookmarkAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'user', 'dish')
+    search_fields = ('user__username', 'dish__name')
+    empty_value_display = settings.EMPTY_VALUE
+
+
+@admin.register(Cart)
+class CartAdmin(admin.ModelAdmin):
+    list_display = ('pk', 'user', 'dish')
+    search_fields = ('user__username', 'dish__name')
+    empty_value_display = settings.EMPTY_VALUE
